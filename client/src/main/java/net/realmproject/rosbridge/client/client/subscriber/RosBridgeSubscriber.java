@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.util.Date;
 import java.util.function.Consumer;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeMessage;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
 
 /**
  * RosJsonSubscribers track messages from a ROS subscription to a single topic

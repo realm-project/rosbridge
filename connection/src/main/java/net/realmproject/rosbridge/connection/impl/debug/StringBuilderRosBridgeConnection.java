@@ -1,11 +1,11 @@
-package net.realmproject.rosbridge.client.connection.impl.debug;
+package net.realmproject.rosbridge.connection.impl.debug;
 
 import java.io.IOException;
 
 import javax.websocket.DeploymentException;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeConnection;
-import net.realmproject.rosbridge.client.connection.impl.AbstractRosBridgeConnection;
+import net.realmproject.rosbridge.connection.RosBridgeConnection;
+import net.realmproject.rosbridge.connection.impl.AbstractRosBridgeConnection;
 
 public class StringBuilderRosBridgeConnection extends AbstractRosBridgeConnection {
 

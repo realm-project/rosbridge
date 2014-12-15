@@ -1,9 +1,9 @@
-package net.realmproject.rosbridge.client.connection.impl;
+package net.realmproject.rosbridge.connection.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeMessage;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
 
 import com.google.common.base.Optional;
 

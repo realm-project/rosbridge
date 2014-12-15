@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeMessage;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
 
 /**
  * A RosBridgeCall is the result of making a ROS service call. It is never seen

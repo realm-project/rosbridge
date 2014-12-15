@@ -1,4 +1,4 @@
-package net.realmproject.rosbridge.client.connection;
+package net.realmproject.rosbridge.connection;
 
 import java.util.Map;
 

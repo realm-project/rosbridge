@@ -7,8 +7,10 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
+	<module>connection</module>
     <module>client</module>
     <module>actionlibclient</module>
+    <module>util</module>
   </modules>
   <build>
   	<plugins>

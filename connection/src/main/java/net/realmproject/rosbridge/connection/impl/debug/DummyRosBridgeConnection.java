@@ -1,12 +1,12 @@
-package net.realmproject.rosbridge.client.connection.impl.debug;
+package net.realmproject.rosbridge.connection.impl.debug;
 
 import java.io.IOException;
 
 import javax.websocket.DeploymentException;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeConnection;
-import net.realmproject.rosbridge.client.connection.RosBridgeMessage;
-import net.realmproject.rosbridge.client.connection.RosBridgeMessageListener;
+import net.realmproject.rosbridge.connection.RosBridgeConnection;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
+import net.realmproject.rosbridge.connection.RosBridgeMessageListener;
 
 public class DummyRosBridgeConnection implements RosBridgeConnection{
 

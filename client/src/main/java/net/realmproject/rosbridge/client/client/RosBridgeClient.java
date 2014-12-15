@@ -9,9 +9,9 @@ import java.util.function.Consumer;
 
 import net.realmproject.rosbridge.client.client.publisher.RosBridgePublisher;
 import net.realmproject.rosbridge.client.client.subscriber.RosBridgeSubscriber;
-import net.realmproject.rosbridge.client.connection.RosBridgeConnection;
-import net.realmproject.rosbridge.client.connection.RosBridgeMessage;
 import net.realmproject.rosbridge.client.datatypes.RosType;
+import net.realmproject.rosbridge.connection.RosBridgeConnection;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
 
 /**
  * High-level client for (un)subscribing to topics, and making system calls via ROSBridge

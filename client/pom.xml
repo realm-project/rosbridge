@@ -47,7 +47,7 @@
 
     <dependency>
     	<groupId>net.realmproject</groupId>
-    	<artifactId>realm-service-util</artifactId>
+    	<artifactId>realm-rosbridge-connection</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>

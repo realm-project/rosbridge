@@ -3,16 +3,16 @@ package net.realmproject.rosbridge.client.client;
 
 import java.io.IOException;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeConnectionFactory;
-import net.realmproject.util.RealmLog;
+import net.realmproject.rosbridge.connection.RosBridgeConnectionFactory;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 public class IRosBridgeClientFactory implements RosBridgeClientFactory {
 
     RosBridgeConnectionFactory factory;
-    private Log log = RealmLog.getLog();
+    private Log log = LogFactory.getLog(getClass());
 
     public IRosBridgeClientFactory(RosBridgeConnectionFactory factory) {
         this.factory = factory;

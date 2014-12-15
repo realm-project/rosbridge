@@ -1,14 +1,14 @@
-package net.realmproject.rosbridge.client.connection.impl.debug;
+package net.realmproject.rosbridge.connection.impl.debug;
 
 import java.io.IOException;
 import java.io.Writer;
 
 import javax.websocket.DeploymentException;
 
-import net.realmproject.rosbridge.client.connection.RosBridgeConnection;
-import net.realmproject.rosbridge.client.connection.RosBridgeMessage;
-import net.realmproject.rosbridge.client.connection.RosBridgeMessageListener;
-import net.realmproject.util.RealmSerialize;
+import net.realmproject.rosbridge.connection.RosBridgeConnection;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
+import net.realmproject.rosbridge.connection.RosBridgeMessageListener;
+import net.realmproject.rosbridge.util.RosBridgeSerialize;
 
 public class LoggingRosBridgeConnection implements RosBridgeConnection {
 
@@ -30,7 +30,7 @@ public class LoggingRosBridgeConnection implements RosBridgeConnection {
 		backer.addMessageListener(message -> {
 			try {
 				if (logInput) { 
-					log.write("Receiving: " + RealmSerialize.serialize(message) + "\n");
+					log.write("Receiving: " + RosBridgeSerialize.serialize(message) + "\n");
 					log.flush();
 				}
 			}
