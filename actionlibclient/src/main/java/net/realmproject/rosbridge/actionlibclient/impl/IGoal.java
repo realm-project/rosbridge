@@ -15,24 +15,24 @@ import net.realmproject.rosbridge.actionlibclient.Goal;
 import net.realmproject.rosbridge.actionlibclient.datatypes.Feedback;
 import net.realmproject.rosbridge.actionlibclient.datatypes.GoalID;
 import net.realmproject.rosbridge.actionlibclient.datatypes.GoalStatus;
-import net.realmproject.rosbridge.actionlibclient.datatypes.Result;
 import net.realmproject.rosbridge.actionlibclient.datatypes.GoalStatus.GoalState;
+import net.realmproject.rosbridge.actionlibclient.datatypes.Result;
 import net.realmproject.rosbridge.actionlibclient.impl.datatypes.InternalFeedbackMessage;
 import net.realmproject.rosbridge.actionlibclient.impl.datatypes.InternalGoalMessage;
 import net.realmproject.rosbridge.actionlibclient.impl.datatypes.InternalResultMessage;
 import net.realmproject.rosbridge.actionlibclient.impl.datatypes.InternalStatusMessage;
 import net.realmproject.rosbridge.client.client.RosBridgeClient;
 import net.realmproject.rosbridge.client.client.subscriber.RosBridgeSubscriber;
-import net.realmproject.util.RealmLog;
-import net.realmproject.util.RealmSerialize;
-import net.realmproject.util.RealmThread;
+import net.realmproject.rosbridge.util.RosBridgeSerialize;
+import net.realmproject.rosbridge.util.RosBridgeThreadPool;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 public class IGoal<T> implements Goal<T> {
 
-    protected final Log log = RealmLog.getLog();
+    private final Log log = LogFactory.getLog(getClass());
 
     RosBridgeClient client;
     String idString;
@@ -40,7 +40,6 @@ public class IGoal<T> implements Goal<T> {
     private String baseTopic;
     private ActionMessageFormats types = new ActionMessageFormats();
     private Consumer<Goal<T>> completedCommand;
-
 
     private RosBridgeSubscriber<InternalResultMessage> resultSub;
     private RosBridgeSubscriber<InternalStatusMessage> statusSub;
@@ -53,7 +52,6 @@ public class IGoal<T> implements Goal<T> {
 
     private Class<T> clazz;
     private boolean closed = false;
-
 
     // private ClientGoalState state;
     private GoalState status;
@@ -72,7 +70,6 @@ public class IGoal<T> implements Goal<T> {
         }
     };
 
-
     public IGoal(RosBridgeClient client, String baseTopic, ActionMessageFormats types, Class<T> clazz,
             Consumer<Goal<T>> completedCommand) throws InterruptedException {
 
@@ -85,7 +82,6 @@ public class IGoal<T> implements Goal<T> {
         idString = getGoalID();
 
     }
-
 
     @Override
     public String getId() {
@@ -100,7 +96,7 @@ public class IGoal<T> implements Goal<T> {
     @Override
     public Future<Optional<Result<T>>> getResult() {
 
-        return RealmThread.getThreadPool().submit(() -> {
+        return RosBridgeThreadPool.getPool().submit(() -> {
 
             // this and handleResult/handleStatus are synchronized; it will
             // notify when anything happens
@@ -123,11 +119,9 @@ public class IGoal<T> implements Goal<T> {
     @Override
     public void submit(String field, T goalData) throws InterruptedException, IOException {
 
-
         // /////////////////////////////////////
         status = null;
         // /////////////////////////////////////
-
 
         // start listening to feedback/status for this goalid. It is important
         // to do this *before* we
@@ -150,7 +144,6 @@ public class IGoal<T> implements Goal<T> {
             handleResult(result);
         });
 
-
         // send the goal
         if (field != null) {
             Map<String, T> wrap = new HashMap<>();
@@ -168,8 +161,6 @@ public class IGoal<T> implements Goal<T> {
         // TODO: make this a synchronous call returning boolean on
         // success/failure to abort?
     }
-
-
 
     @Override
     public void setStatusHandler(Consumer<GoalStatus> statusHandler) {
@@ -190,10 +181,6 @@ public class IGoal<T> implements Goal<T> {
     public void setCompletionHandler(Runnable completionHandler) {
         userCompletionHandler = completionHandler;
     }
-
-
-
-
 
     /**
      * There are a couple of conditions we're waiting on in order to be
@@ -220,7 +207,6 @@ public class IGoal<T> implements Goal<T> {
         completedCommand.accept(this);
         closeSubscriptions();
 
-
         // wakes any threads waiting on this object if the goal is complete and
         // we have the result.
         notifyAll();
@@ -232,7 +218,6 @@ public class IGoal<T> implements Goal<T> {
         // return isGoalStateCompleted() && result.isPresent();
         return (isGoalStateSucceeded() && result.isPresent()) || isGoalStateFailed();
     }
-
 
     @Override
     public boolean isGoalStateFailed() {
@@ -251,10 +236,6 @@ public class IGoal<T> implements Goal<T> {
         if (status == GoalState.RECALLED) return true;
         return false;
     }
-
-
-
-
 
     @Override
     public void close() throws IOException {
@@ -280,10 +261,6 @@ public class IGoal<T> implements Goal<T> {
         catch (IOException e) {}
     }
 
-
-
-
-
     private synchronized void handleFeedback(Feedback<T> feedbackMessage) {
 
         if (userFeedbackHandler != null) userFeedbackHandler.accept(feedbackMessage);
@@ -299,7 +276,7 @@ public class IGoal<T> implements Goal<T> {
 
     private synchronized void handleResult(Result<T> resultMessage) {
 
-        log.debug(RealmSerialize.serialize(resultMessage));
+        log.debug(RosBridgeSerialize.serialize(resultMessage));
 
         result = Optional.ofNullable(resultMessage);
         // TODO: change state manually, or will this occur as a separate
@@ -308,10 +285,6 @@ public class IGoal<T> implements Goal<T> {
         handleIfCompleted();
         if (userResultHandler != null) userResultHandler.accept(resultMessage);
     }
-
-
-
-
 
     @SuppressWarnings("unchecked")
     private T breakoutData(Object input) {
@@ -322,15 +295,13 @@ public class IGoal<T> implements Goal<T> {
 
         // if there is more than one key, we're not dealing with a single nested
         // structure.
-        if (!singleKey) return RealmSerialize.convertMessage(input, clazz);
+        if (!singleKey) return RosBridgeSerialize.convertMessage(input, clazz);
 
         // otherwise, we'll need to 'hoist' the data up one level
         Object value = map.get(key);
-        return RealmSerialize.convertMessage(value, clazz);
-
+        return RosBridgeSerialize.convertMessage(value, clazz);
 
     }
-
 
     // Get a feedback object from a feedback message
     private Feedback<T> unpackFeedback(InternalFeedbackMessage feedbackMessage) {
@@ -343,7 +314,6 @@ public class IGoal<T> implements Goal<T> {
         return feedback;
 
     }
-
 
     private Result<T> unpackResult(InternalResultMessage resultMessage) {
         // TODO: Implement me!
@@ -365,7 +335,6 @@ public class IGoal<T> implements Goal<T> {
 
     }
 
-
     private boolean isFeedbackForUs(Feedback<T> feedback) {
         GoalID feedbackGoalID = feedback.status.goal_id;
         if (!getId().equals(feedbackGoalID.id)) return false;
@@ -381,9 +350,5 @@ public class IGoal<T> implements Goal<T> {
     private String getGoalID() {
         return goalIDGenerator.get();
     }
-
-
-
-
 
 }
