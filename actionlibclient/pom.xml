@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>net.realmproject</groupId>
+    <groupId>net.realmproject.rosbridge</groupId>
     <artifactId>realm-rosbridge</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
@@ -46,12 +46,12 @@
 
 
     <dependency>
-    	<groupId>net.realmproject</groupId>
+    	<groupId>net.realmproject.rosbridge</groupId>
     	<artifactId>realm-rosbridge-client</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
-  <groupId>net.realmproject</groupId>
+  <groupId>net.realmproject.rosbridge</groupId>
   <build>
   	<plugins>
       <plugin>
