@@ -28,7 +28,7 @@ public abstract class AbstractRosBridgeCall<T> implements RosBridgeCall<T>, Clos
         // make sure id matches
         if (!msg.matchesId(id)) return;
         boolean result = (boolean) msg.getArguments().get("result");
-        if (!result) throw new IllegalArgumentException("Service Call '" + service + ":" + id + "' Failed");
+        if (!result) throw new IllegalArgumentException("Service Call #" + id + ": '" + service + "' Failed");
 
         Map<String, Object> args = msg.getArguments();
         String msgService = (String) args.get("service");
