@@ -1,66 +1,85 @@
 package net.realmproject.rosbridge.util;
 
 
-
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-import flexjson.JSONDeserializer;
-import flexjson.JSONSerializer;
-import flexjson.transformer.AbstractTransformer;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 
 
 public class RosBridgeSerialize {
 
+    private final static ObjectMapper SERIALIZE_WITHOUT_CLASSES = new ObjectMapper();
 
+    static {
+        SERIALIZE_WITHOUT_CLASSES.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+    }
 
+    private final static ObjectMapper SERIALIZE_WITH_CLASSES = new ObjectMapper();
+
+    static {
+        SERIALIZE_WITH_CLASSES.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+        SERIALIZE_WITH_CLASSES.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+    }
+
+    private final static ObjectMapper DESERIALIZE = new ObjectMapper();
+
+    @SuppressWarnings("unchecked")
     public static Map<String, Serializable> structToMap(Object o) {
         Object o2 = deserialize(serialize(o));
         if (!(o2 instanceof Map)) o = Collections.singletonMap("value", o);
         return (Map<String, Serializable>) deserialize(serialize(o));
     }
 
-    public static <T> T convertMessage(Object publication, Class<T> clazz) {
-        String asString = serialize(publication);
+    @SuppressWarnings("unchecked")
+    public static <T> T convertObject(Object object, Class<T> clazz) {
+        // If this object is of class 'clazz', then just return it
+        if (clazz.isAssignableFrom(object.getClass())) { return (T) object; }
+        // Otherwise, use json serialization to try and coerce the data into the
+        // desired class
+        String asString = serialize(object);
         return deserialize(asString, clazz);
     }
 
-    // (de)serialize methods
     public static Object deserialize(String json) {
-        return RosBridgeSerialize.<Object> getDeserializer().deserialize(json);
+        try {
+            return DESERIALIZE.reader(Object.class).readValue(json);
+        }
+        catch (IOException e) {
+            throw new SerializationException(e);
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T deserialize(String json, Class<T> clazz) {
-        return RosBridgeSerialize.<T> getDeserializer().deserialize(json, clazz);
+        try {
+            return (T) DESERIALIZE.reader(clazz).readValue(json);
+        }
+        catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    public static String serializeWithClassInfo(Object o) {
+        try {
+            return SERIALIZE_WITH_CLASSES.writeValueAsString(o);
+        }
+        catch (IOException e) {
+            throw new SerializationException(e);
+        }
     }
 
     public static String serialize(Object o) {
-        return getSerializer().deepSerialize(o);
+
+        try {
+            return SERIALIZE_WITHOUT_CLASSES.writeValueAsString(o);
+        }
+        catch (IOException e) {
+            throw new SerializationException(e);
+        }
     }
 
-    // FlexJson Object creation/retrieval
-    private static <T> JSONDeserializer<T> getDeserializer() {
-        return new JSONDeserializer<>();
-    }
-
-    private static JSONSerializer getSerializer() {
-        return new JSONSerializer().transform(new ExcludeTransformer(), void.class).exclude("*.class")
-                .prettyPrint(true);
-    }
-
-}
-
-class ExcludeTransformer extends AbstractTransformer {
-
-    @Override
-    public Boolean isInline() {
-        return true;
-    }
-
-    @Override
-    public void transform(Object object) {
-        // Do nothing, null objects are not serialized.
-        return;
-    }
 }

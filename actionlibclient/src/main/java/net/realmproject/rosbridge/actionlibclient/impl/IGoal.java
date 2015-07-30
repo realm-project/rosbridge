@@ -11,6 +11,9 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.realmproject.rosbridge.actionlibclient.Goal;
 import net.realmproject.rosbridge.actionlibclient.datatypes.Feedback;
 import net.realmproject.rosbridge.actionlibclient.datatypes.GoalID;
@@ -25,9 +28,6 @@ import net.realmproject.rosbridge.client.client.RosBridgeClient;
 import net.realmproject.rosbridge.client.client.subscriber.RosBridgeSubscriber;
 import net.realmproject.rosbridge.util.RosBridgeSerialize;
 import net.realmproject.rosbridge.util.RosBridgeThreadPool;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 public class IGoal<T> implements Goal<T> {
@@ -100,14 +100,14 @@ public class IGoal<T> implements Goal<T> {
 
             // this and handleResult/handleStatus are synchronized; it will
             // notify when anything happens
-                synchronized (IGoal.this) {
-                    while (true) {
-                        if (isComplete()) return result;
-                        wait();
-                    }
+            synchronized (IGoal.this) {
+                while (true) {
+                    if (isComplete()) return result;
+                    wait();
                 }
+            }
 
-            });
+        });
 
     }
 
@@ -295,11 +295,11 @@ public class IGoal<T> implements Goal<T> {
 
         // if there is more than one key, we're not dealing with a single nested
         // structure.
-        if (!singleKey) return RosBridgeSerialize.convertMessage(input, clazz);
+        if (!singleKey) return RosBridgeSerialize.convertObject(input, clazz);
 
         // otherwise, we'll need to 'hoist' the data up one level
         Object value = map.get(key);
-        return RosBridgeSerialize.convertMessage(value, clazz);
+        return RosBridgeSerialize.convertObject(value, clazz);
 
     }
 

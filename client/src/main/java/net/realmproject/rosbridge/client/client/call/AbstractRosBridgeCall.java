@@ -45,7 +45,7 @@ public abstract class AbstractRosBridgeCall<T> implements RosBridgeCall<T>, Clos
     @SuppressWarnings("unchecked")
     private T toT(Object value) {
         if (clazz != null) {
-            return RosBridgeSerialize.convertMessage(value, clazz);
+            return RosBridgeSerialize.convertObject(value, clazz);
         } else {
             return (T) value;
         }

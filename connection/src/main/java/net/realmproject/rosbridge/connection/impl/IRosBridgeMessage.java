@@ -4,11 +4,10 @@ package net.realmproject.rosbridge.connection.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.realmproject.rosbridge.connection.RosBridgeMessage;
-
 import com.google.common.base.Optional;
 
-import flexjson.JSONDeserializer;
+import net.realmproject.rosbridge.connection.RosBridgeMessage;
+import net.realmproject.rosbridge.util.RosBridgeSerialize;
 
 
 /**
@@ -27,8 +26,7 @@ public class IRosBridgeMessage implements RosBridgeMessage {
 
     public IRosBridgeMessage(String source) {
 
-        JSONDeserializer<Map<String, Object>> des = new JSONDeserializer<>();
-        Map<String, Object> map = des.deserialize(source);
+        Map<String, Object> map = (Map<String, Object>) RosBridgeSerialize.deserialize(source);
 
         setOpcode((String) map.remove("op"));
         if (map.containsKey("id")) {

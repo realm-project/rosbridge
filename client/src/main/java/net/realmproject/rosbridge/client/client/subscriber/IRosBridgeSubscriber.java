@@ -29,7 +29,8 @@ public class IRosBridgeSubscriber<T> implements RosBridgeSubscriber<T> {
         this(client, topic, type, null, clazz);
     }
 
-    public IRosBridgeSubscriber(IRosBridgeClient client, String topic, String type, Consumer<T> handler, Class<T> clazz) {
+    public IRosBridgeSubscriber(IRosBridgeClient client, String topic, String type, Consumer<T> handler,
+            Class<T> clazz) {
         this.topic = topic;
         this.handler = handler;
         this.clazz = clazz;
@@ -76,7 +77,7 @@ public class IRosBridgeSubscriber<T> implements RosBridgeSubscriber<T> {
     public void accept(RosBridgeMessage msg) {
 
         switch (msg.getOpcode()) {
-        // case "status": onPublish(msg); return;
+            // case "status": onPublish(msg); return;
             case "publish":
                 onPublish(msg);
                 return;
@@ -92,7 +93,7 @@ public class IRosBridgeSubscriber<T> implements RosBridgeSubscriber<T> {
         T message;
 
         if (clazz != null) {
-            message = RosBridgeSerialize.convertMessage(objMessage, clazz);
+            message = RosBridgeSerialize.convertObject(objMessage, clazz);
         } else {
             message = (T) objMessage;
         }
