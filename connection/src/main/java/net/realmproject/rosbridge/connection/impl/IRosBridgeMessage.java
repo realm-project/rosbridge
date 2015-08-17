@@ -3,8 +3,7 @@ package net.realmproject.rosbridge.connection.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import net.realmproject.rosbridge.connection.RosBridgeMessage;
 import net.realmproject.rosbridge.util.RosBridgeSerialize;
@@ -39,7 +38,7 @@ public class IRosBridgeMessage implements RosBridgeMessage {
 
     public IRosBridgeMessage(RosBridgeMessage source) {
         setOpcode(source.getOpcode());
-        setId(source.getId().orNull());
+        setId(source.getId().orElse(null));
         setArguments(new HashMap<>(source.getArguments()));
     }
 
@@ -70,7 +69,7 @@ public class IRosBridgeMessage implements RosBridgeMessage {
 
     @Override
     public void setId(String id) {
-        this.id = Optional.fromNullable(id);
+        this.id = Optional.ofNullable(id);
     }
 
     /**
@@ -93,7 +92,7 @@ public class IRosBridgeMessage implements RosBridgeMessage {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("OpCode: " + opcode + "\n");
-        sb.append("ID: " + id.or("null") + "\n");
+        sb.append("ID: " + id.orElse("null") + "\n");
         sb.append("Arguments: \n");
         for (String key : arguments.keySet()) {
             sb.append("  " + key + ": " + arguments.get(key) + "\n");

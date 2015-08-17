@@ -1,29 +1,33 @@
 package net.realmproject.rosbridge.connection;
 
-import java.util.Map;
 
-import com.google.common.base.Optional;
+import java.util.Map;
+import java.util.Optional;
 
 
 /**
  * A struct-like class for containing a RosJson JSON message
+ * 
  * @author nathaniel
  *
  */
 
-public interface RosBridgeMessage
-{
+public interface RosBridgeMessage {
 
-	String getOpcode();
-	void setOpcode(String opcode);
+    String getOpcode();
 
-	Map<String, Object> getArguments();
-	void setArguments(Map<String, Object> arguments);
+    void setOpcode(String opcode);
 
-	Optional<String> getId();
-	void setId(String id);
-	
-	boolean hasId();
-	boolean matchesId(String id);
-	
+    Map<String, Object> getArguments();
+
+    void setArguments(Map<String, Object> arguments);
+
+    Optional<String> getId();
+
+    void setId(String id);
+
+    boolean hasId();
+
+    boolean matchesId(String id);
+
 }

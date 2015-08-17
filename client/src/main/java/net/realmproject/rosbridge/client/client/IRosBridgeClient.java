@@ -3,6 +3,7 @@ package net.realmproject.rosbridge.client.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,9 +24,6 @@ import net.realmproject.rosbridge.connection.RosBridgeConnection;
 import net.realmproject.rosbridge.connection.RosBridgeMessage;
 import net.realmproject.rosbridge.util.RosBridgeSerialize;
 import net.realmproject.rosbridge.util.RosBridgeThreadPool;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 
 /**
@@ -50,7 +48,7 @@ public class IRosBridgeClient implements RosBridgeClient {
     public static final String TOPIC_UNADVERTISE = "unadvertise";
 
     private RosBridgeConnection connection;
-    private Multimap<String, Consumer<RosBridgeMessage>> handlers = HashMultimap.create();
+    private Map<String, Collection<Consumer<RosBridgeMessage>>> handlers = new HashMap<>();
 
     private Set<RosBridgePublisher> publishers = new HashSet<>();
 
@@ -90,12 +88,23 @@ public class IRosBridgeClient implements RosBridgeClient {
 
     @Override
     public void addCustomHandler(String opcode, Consumer<RosBridgeMessage> handler) {
-        handlers.put(opcode, handler);
+
+        if (!handlers.containsKey(opcode)) {
+            handlers.put(opcode, new ArrayList<>());
+        }
+
+        Collection<Consumer<RosBridgeMessage>> consumers = handlers.get(opcode);
+        consumers.add(handler);
+
     }
 
     @Override
     public void removeCustomHandler(String opcode, Consumer<RosBridgeMessage> handler) {
-        handlers.remove(opcode, handler);
+
+        if (!handlers.containsKey(opcode)) { return; }
+
+        Collection<Consumer<RosBridgeMessage>> consumers = handlers.get(opcode);
+        consumers.remove(handler);
     }
 
     /*********************************************
@@ -106,8 +115,8 @@ public class IRosBridgeClient implements RosBridgeClient {
      *********************************************/
 
     @Override
-    public RosBridgeSubscriber<?> subscribe(String topic, Consumer<Object> handler) throws InterruptedException,
-            IOException {
+    public RosBridgeSubscriber<?> subscribe(String topic, Consumer<Object> handler)
+            throws InterruptedException, IOException {
         return subscribe(topic, null, Object.class, handler);
     }
 
@@ -139,8 +148,8 @@ public class IRosBridgeClient implements RosBridgeClient {
     }
 
     @Override
-    public <T> RosBridgeSubscriber<T> subscribe(String topic, String type, Class<T> clazz) throws InterruptedException,
-            IOException {
+    public <T> RosBridgeSubscriber<T> subscribe(String topic, String type, Class<T> clazz)
+            throws InterruptedException, IOException {
         return subscribe(topic, type, clazz, null);
     }
 
@@ -296,8 +305,8 @@ public class IRosBridgeClient implements RosBridgeClient {
 
     @Override
     public <T> RosBridgePublisher advertise(String topic, Class<T> cls) throws InterruptedException, IOException {
-        if (cls.getDeclaredAnnotation(RosType.class) == null) throw new IllegalArgumentException(
-                "No RosType annotation found");
+        if (cls.getDeclaredAnnotation(RosType.class) == null)
+            throw new IllegalArgumentException("No RosType annotation found");
         return advertise(topic, typeFromClass(cls));
     }
 
