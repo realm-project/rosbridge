@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import net.realmproject.dcm.util.DCMThreadPool;
 import net.realmproject.rosbridge.actionlibclient.Goal;
 import net.realmproject.rosbridge.actionlibclient.datatypes.Feedback;
 import net.realmproject.rosbridge.actionlibclient.datatypes.GoalID;
@@ -27,7 +28,6 @@ import net.realmproject.rosbridge.actionlibclient.impl.datatypes.InternalStatusM
 import net.realmproject.rosbridge.client.client.RosBridgeClient;
 import net.realmproject.rosbridge.client.client.subscriber.RosBridgeSubscriber;
 import net.realmproject.rosbridge.util.RosBridgeSerialize;
-import net.realmproject.rosbridge.util.RosBridgeThreadPool;
 
 
 public class IGoal<T> implements Goal<T> {
@@ -96,7 +96,7 @@ public class IGoal<T> implements Goal<T> {
     @Override
     public Future<Optional<Result<T>>> getResult() {
 
-        return RosBridgeThreadPool.getPool().submit(() -> {
+        return DCMThreadPool.getPool().submit(() -> {
 
             // this and handleResult/handleStatus are synchronized; it will
             // notify when anything happens

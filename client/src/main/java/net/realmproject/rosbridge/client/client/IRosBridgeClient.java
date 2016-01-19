@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import net.realmproject.dcm.util.DCMThreadPool;
 import net.realmproject.rosbridge.client.client.call.IRosBridgeCallbackCall;
 import net.realmproject.rosbridge.client.client.call.IRosBridgeFutureCall;
 import net.realmproject.rosbridge.client.client.call.RosBridgeCall;
@@ -23,7 +24,6 @@ import net.realmproject.rosbridge.client.datatypes.RosType;
 import net.realmproject.rosbridge.connection.RosBridgeConnection;
 import net.realmproject.rosbridge.connection.RosBridgeMessage;
 import net.realmproject.rosbridge.util.RosBridgeSerialize;
-import net.realmproject.rosbridge.util.RosBridgeThreadPool;
 
 
 /**
@@ -235,20 +235,14 @@ public class IRosBridgeClient implements RosBridgeClient {
         String id = connection.getNewMessageID();
         Map<String, Object> msg = buildCallMessage(service, id, args);
 
-        IRosBridgeFutureCall<T> call = new IRosBridgeFutureCall<T>(service, id, clazz,
-                new Consumer<RosBridgeCall<T>>() {
+        IRosBridgeFutureCall<T> response = new IRosBridgeFutureCall<T>(service, id, clazz,
+                t -> removeCustomHandler(SERVICE_RETURN, t));
 
-                    @Override
-                    public void accept(RosBridgeCall<T> t) {
-                        removeCustomHandler(SERVICE_RETURN, t);
-                    }
-                });
-
-        addCustomHandler(SERVICE_RETURN, call);
+        addCustomHandler(SERVICE_RETURN, response);
 
         connection.sendMessage(RosBridgeSerialize.serialize(msg));
 
-        return RosBridgeThreadPool.getPool().submit(call);
+        return DCMThreadPool.getPool().submit(response);
     }
 
     @Override

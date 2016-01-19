@@ -45,6 +45,11 @@
     	<artifactId>realm-rosbridge-connection</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+    	<groupId>net.realmproject.dcm</groupId>
+    	<artifactId>realm-dcm-util</artifactId>
+    	<version>2.0.0</version>
+    </dependency>
   </dependencies>
   <groupId>net.realmproject.rosbridge</groupId>
   <build>
