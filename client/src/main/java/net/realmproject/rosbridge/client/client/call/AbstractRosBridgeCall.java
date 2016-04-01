@@ -57,4 +57,16 @@ public abstract class AbstractRosBridgeCall<T> implements RosBridgeCall<T>, Clos
         closeCommand.accept(this);
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Call[");
+        sb.append(service);
+        sb.append(" | #");
+        sb.append(id);
+        sb.append("]");
+
+        return sb.toString();
+    }
+
 }

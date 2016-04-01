@@ -2,18 +2,15 @@ package net.realmproject.rosbridge.connection.impl.websocket;
 
 
 import java.io.IOException;
-import java.net.URI;
+import java.util.Base64;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
-import javax.websocket.ContainerProvider;
-import javax.websocket.DeploymentException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
-import javax.websocket.WebSocketContainer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,37 +29,51 @@ public class WebSocketRosBridgeConnection extends AbstractRosBridgeConnection {
     private Log log = LogFactory.getLog(getClass());
 
     protected Session session;
-    private long idCounter = 0;
 
-    public WebSocketRosBridgeConnection(String server, int bufferSize) throws InterruptedException, IOException {
-        connect(server, bufferSize);
-    }
+    private String server;
+    private int bufferSize;
+
+    public WebSocketRosBridgeConnection() throws InterruptedException, IOException {}
 
     @OnOpen
     public void onOpen(Session session) throws InterruptedException {
         synchronized (WebSocketRosBridgeConnection.class) {
             socketNumber = socketCount++;
         }
+
         this.session = session;
-        log.info("WebSocket # " + socketNumber + " Connection Successful");
+        if (!session.isOpen()) {
+            log.error(this + " Connection Failed. New Websocket is not Open");
+        } else {
+            log.info(this + " Connection Successful");
+        }
 
     }
 
     @OnMessage
+    public void onBinaryMessage(byte[] message) {
+        log.trace(this + " Received Binary:\n" + Base64.getEncoder().encode(message));
+    }
+
+    @OnMessage
     public void onMessage(String message) {
+
+        log.trace(this + " Received Message:\n" + message);
 
         try {
             RosBridgeMessage deserailzed = new IRosBridgeMessage(message);
             notifyMessageListeners(deserailzed);
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
         }
+
+        log.trace(this + " Receipt Completed");
     }
 
     @OnClose
     public void onClose(Session s, CloseReason reason) {
-        log.info("Closed Session #" + socketNumber + " - " + s.toString());
+        log.info("Closed " + this + " - " + s.toString());
         if (reason.getReasonPhrase() != null && reason.getReasonPhrase().length() > 0) {
             log.info(reason.getReasonPhrase());
         }
@@ -70,12 +81,23 @@ public class WebSocketRosBridgeConnection extends AbstractRosBridgeConnection {
 
     @OnError
     public void onError(Throwable t) {
-        log.error("Received Throwble in onError for WebSocket Connection #" + socketNumber, t);
+        log.error("Received Throwble in onError for " + this, t);
     }
 
-    @Override
-    public String getNewMessageID() {
-        return "" + idCounter++;
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
     }
 
     @Override
@@ -83,32 +105,25 @@ public class WebSocketRosBridgeConnection extends AbstractRosBridgeConnection {
 
         if (session == null) throw new IOException("Not Connected");
 
+        log.trace(this + " Sending Message:\n" + message);
+
         synchronized (WebSocketRosBridgeConnection.class) {
             session.getBasicRemote().sendText(message);
         }
 
     }
 
-    // creates a connection synchronously
-    private synchronized void connect(final String uri, int bufferSize) throws IOException {
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        container.setDefaultMaxBinaryMessageBufferSize(bufferSize * 1024);
-        container.setDefaultMaxTextMessageBufferSize(bufferSize * 1024);
-        container.setDefaultMaxSessionIdleTimeout(0);
-        container.setAsyncSendTimeout(5000);
-        try {
-            container.connectToServer(this, URI.create(uri));
-        }
-        catch (DeploymentException e) {
-            throw new IOException(e);
-        }
-    }
-
     @Override
     public synchronized void close() throws IOException {
         if (session == null) return;
-        session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Done"));
+        if (session.isOpen()) {
+            session.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Done"));
+        }
         session = null;
+    }
+
+    public String toString() {
+        return "WebSocket #" + socketNumber;
     }
 
 }

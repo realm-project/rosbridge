@@ -1,7 +1,10 @@
 package net.realmproject.rosbridge.client.client;
 
-import java.io.IOException;
+
+import net.realmproject.rosbridge.connection.RosBridgeConnectionException;
+
 
 public interface RosBridgeClientFactory {
-	RosBridgeClient connect() throws InterruptedException, IOException;
+
+    RosBridgeClient connect() throws RosBridgeConnectionException;
 }

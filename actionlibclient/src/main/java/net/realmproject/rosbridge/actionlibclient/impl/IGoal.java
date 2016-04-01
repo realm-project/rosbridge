@@ -55,6 +55,7 @@ public class IGoal<T> implements Goal<T> {
 
     // private ClientGoalState state;
     private GoalState status;
+    private boolean cancelled = false;
     private Optional<Result<T>> result = Optional.empty();
     private boolean handledCompletion = false;
 
@@ -71,7 +72,7 @@ public class IGoal<T> implements Goal<T> {
     };
 
     public IGoal(RosBridgeClient client, String baseTopic, ActionMessageFormats types, Class<T> clazz,
-            Consumer<Goal<T>> completedCommand) throws InterruptedException {
+            Consumer<Goal<T>> completedCommand) {
 
         this.client = client;
         this.types = types;
@@ -158,6 +159,8 @@ public class IGoal<T> implements Goal<T> {
     @Override
     public void cancel() throws InterruptedException, IOException {
         client.publishOnce(baseTopic + "cancel", "actionlib/GoalID", new GoalID(getId()));
+        cancelled = true;
+        handleIfCompleted();
         // TODO: make this a synchronous call returning boolean on
         // success/failure to abort?
     }
@@ -205,7 +208,13 @@ public class IGoal<T> implements Goal<T> {
 
         // clean up anything related to this goal, now that we're done
         completedCommand.accept(this);
-        closeSubscriptions();
+        // closeSubscriptions(); //NAS 2016-03-28
+        try {
+            close();
+        }
+        catch (IOException e) {
+            log.error("Error closing " + this, e);
+        }
 
         // wakes any threads waiting on this object if the goal is complete and
         // we have the result.
@@ -216,7 +225,7 @@ public class IGoal<T> implements Goal<T> {
     @Override
     public boolean isComplete() {
         // return isGoalStateCompleted() && result.isPresent();
-        return (isGoalStateSucceeded() && result.isPresent()) || isGoalStateFailed();
+        return (isGoalStateSucceeded() && result.isPresent()) || isGoalStateFailed() || isGoalCancelled();
     }
 
     @Override
@@ -226,6 +235,11 @@ public class IGoal<T> implements Goal<T> {
         if (status == GoalState.ABORTED) return true;
 
         return false;
+    }
+
+    @Override
+    public boolean isGoalCancelled() {
+        return cancelled;
     }
 
     @Override
@@ -239,6 +253,7 @@ public class IGoal<T> implements Goal<T> {
 
     @Override
     public void close() throws IOException {
+        closed = true;
         closeSubscriptions();
         setCompletionHandler(null);
         setFeedbackHandler(null);

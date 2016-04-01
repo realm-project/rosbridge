@@ -12,6 +12,9 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.realmproject.dcm.util.DCMThreadPool;
 import net.realmproject.rosbridge.client.client.call.IRosBridgeCallbackCall;
 import net.realmproject.rosbridge.client.client.call.IRosBridgeFutureCall;
@@ -39,6 +42,9 @@ import net.realmproject.rosbridge.util.RosBridgeSerialize;
 
 public class IRosBridgeClient implements RosBridgeClient {
 
+    private static int clientCount = 0;
+    private int clientNumber = 0;
+
     public static final String SERVICE_CALL = "call_service";
     public static final String SERVICE_RETURN = "service_response";
     public static final String TOPIC_SUBSCRIBE = "subscribe";
@@ -52,8 +58,11 @@ public class IRosBridgeClient implements RosBridgeClient {
 
     private Set<RosBridgePublisher> publishers = new HashSet<>();
 
+    private Log log = LogFactory.getLog(getClass());
+
     public IRosBridgeClient(RosBridgeConnection connection) {
         this.connection = connection;
+        this.clientNumber = clientCount++;
 
         // set up a listener for messages from this client
         connection.addMessageListener(this::handleMessage);
@@ -78,7 +87,9 @@ public class IRosBridgeClient implements RosBridgeClient {
         List<Consumer<RosBridgeMessage>> handlerList = new ArrayList<>(handlers.get(message.getOpcode()));
 
         for (Consumer<RosBridgeMessage> handler : handlerList) {
+            log.trace("Passing Message to Handler " + handler);
             handler.accept(message);
+            log.trace("Handler " + handler + " Completed");
         }
     }
 
@@ -88,6 +99,7 @@ public class IRosBridgeClient implements RosBridgeClient {
 
     @Override
     public void addCustomHandler(String opcode, Consumer<RosBridgeMessage> handler) {
+        if (handler == null) { return; }
 
         if (!handlers.containsKey(opcode)) {
             handlers.put(opcode, new ArrayList<>());
@@ -341,6 +353,10 @@ public class IRosBridgeClient implements RosBridgeClient {
     @Override
     public void close() throws IOException {
         connection.close();
+    }
+
+    public String toString() {
+        return "IRosBridgeClient #" + clientNumber;
     }
 
 }

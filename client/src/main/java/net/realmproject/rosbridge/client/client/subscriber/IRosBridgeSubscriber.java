@@ -123,4 +123,30 @@ public class IRosBridgeSubscriber<T> implements RosBridgeSubscriber<T> {
         return lastMessageDate;
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Subscription[");
+
+        sb.append(getTopic());
+
+        if (type != null) {
+            sb.append(" | ");
+            sb.append(type);
+        }
+
+        if (clazz != null) {
+            sb.append(" -> ");
+            sb.append(clazz.getName());
+        }
+
+        sb.append(" | ");
+        sb.append(getId());
+
+        sb.append("]");
+
+        return sb.toString();
+
+    }
+
 }
